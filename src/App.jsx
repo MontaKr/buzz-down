@@ -27,7 +27,11 @@ function App() {
         className="spotlight relative w-full overflow-hidden bg-[#fff318] px-24 py-48 reference-mobile:px-8"
       >
         <div className="spotlight-item mb-40 w-2/5 odd:mr-auto even:ml-auto last:mb-0 reference-mobile:w-3/5">
-          <img className="h-full w-full object-cover" src="/img1.jpg" alt="" />
+          <img
+            className="h-full w-full object-cover"
+            src={`${import.meta.env.BASE_URL}img1.jpg`}
+            alt=""
+          />
           <div className="spotlight-item-copy mt-4 flex justify-between font-medium leading-none tracking-[-0.01em]">
             <p>Fruiting Bodies</p>
             <p>01</p>
@@ -35,7 +39,11 @@ function App() {
         </div>
 
         <div className="spotlight-item mb-40 w-2/5 odd:mr-auto even:ml-auto last:mb-0 reference-mobile:w-3/5">
-          <img className="h-full w-full object-cover" src="/img2.jpg" alt="" />
+          <img
+            className="h-full w-full object-cover"
+            src={`${import.meta.env.BASE_URL}img2.jpg`}
+            alt=""
+          />
           <div className="spotlight-item-copy mt-4 flex justify-between font-medium leading-none tracking-[-0.01em]">
             <p>Silk &amp; Sediment</p>
             <p>02</p>
@@ -43,7 +51,11 @@ function App() {
         </div>
 
         <div className="spotlight-item mb-40 w-2/5 odd:mr-auto even:ml-auto last:mb-0 reference-mobile:w-3/5">
-          <img className="h-full w-full object-cover" src="/img3.jpg" alt="" />
+          <img
+            className="h-full w-full object-cover"
+            src={`${import.meta.env.BASE_URL}img3.jpg`}
+            alt=""
+          />
           <div className="spotlight-item-copy mt-4 flex justify-between font-medium leading-none tracking-[-0.01em]">
             <p>Canvas Drape</p>
             <p>03</p>
@@ -51,7 +63,11 @@ function App() {
         </div>
 
         <div className="spotlight-item mb-40 w-2/5 odd:mr-auto even:ml-auto last:mb-0 reference-mobile:w-3/5">
-          <img className="h-full w-full object-cover" src="/img4.jpg" alt="" />
+          <img
+            className="h-full w-full object-cover"
+            src={`${import.meta.env.BASE_URL}img4.jpg`}
+            alt=""
+          />
           <div className="spotlight-item-copy mt-4 flex justify-between font-medium leading-none tracking-[-0.01em]">
             <p>Lowland Drift</p>
             <p>04</p>
@@ -59,7 +75,11 @@ function App() {
         </div>
 
         <div className="spotlight-item mb-40 w-2/5 odd:mr-auto even:ml-auto last:mb-0 reference-mobile:w-3/5">
-          <img className="h-full w-full object-cover" src="/img5.jpg" alt="" />
+          <img
+            className="h-full w-full object-cover"
+            src={`${import.meta.env.BASE_URL}img5.jpg`}
+            alt=""
+          />
           <div className="spotlight-item-copy mt-4 flex justify-between font-medium leading-none tracking-[-0.01em]">
             <p>Culture Dish</p>
             <p>05</p>
@@ -67,7 +87,11 @@ function App() {
         </div>
 
         <div className="spotlight-item mb-40 w-2/5 odd:mr-auto even:ml-auto last:mb-0 reference-mobile:w-3/5">
-          <img className="h-full w-full object-cover" src="/img6.jpg" alt="" />
+          <img
+            className="h-full w-full object-cover"
+            src={`${import.meta.env.BASE_URL}img6.jpg`}
+            alt=""
+          />
           <div className="spotlight-item-copy mt-4 flex justify-between font-medium leading-none tracking-[-0.01em]">
             <p>Quiet Hours</p>
             <p>06</p>

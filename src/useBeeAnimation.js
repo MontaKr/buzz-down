@@ -70,7 +70,7 @@ export const useBeeAnimation = () => {
         renderer: "svg",
         loop: true,
         autoplay: true,
-        path: "/bee.json",
+        path: `${import.meta.env.BASE_URL}bee.json`,
       }),
     );
 

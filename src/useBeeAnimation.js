@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import lottie from "lottie-web";
 
+// 벌의 수평 이동 값
 const horizontalKeyframes = [
   { progress: 0, value: -0.3 },
   { progress: 0.1, value: -0.6 },
@@ -17,6 +18,7 @@ const horizontalKeyframes = [
   { progress: 1, value: -0.2 },
 ];
 
+// 벌의 수직 이동 값
 const verticalKeyframes = [
   { progress: 0, value: 0 },
   { progress: 0.05, value: 0.16 },
@@ -26,6 +28,13 @@ const verticalKeyframes = [
   { progress: 1, value: 1 },
 ];
 
+/**
+ * 스크롤 진행률이 속한 Keyframe 구간을 찾아 value를 부드럽게 보간
+ *
+ * @param keyframes - 벌 이동 값 경로 데이터
+ * @param progress - ScrollTrigger 구간의 스크롤 진행률 (0~1)
+ * @returns {number} 현재 진행률에 해당하는 보간된 값
+ */
 export const sampleKeyframes = (keyframes, progress) => {
   for (let i = 0; i < keyframes.length - 1; i++) {
     const from = keyframes[i];
@@ -33,11 +42,13 @@ export const sampleKeyframes = (keyframes, progress) => {
 
     if (progress >= from.progress && progress <= to.progress) {
       const segment =
-        (progress - from.progress) / (to.progress - from.progress);
-      const eased = segment * segment * (3 - 2 * segment);
+        (progress - from.progress) / (to.progress - from.progress); // 해당 구간에서 진행률
+      const eased = segment * segment * (3 - 2 * segment); // eased 보정
+
       return from.value + (to.value - from.value) * eased;
     }
   }
+
   return keyframes[keyframes.length - 1].value;
 };
 
@@ -46,42 +57,45 @@ export const useBeeAnimation = () => {
   const beeRef = useRef(null);
   const shadowRef = useRef(null);
 
-  const [animationStatus, setAnimationStatus] = useState("loading");
-
   useEffect(() => {
     const spotlight = spotlightRef.current;
     const bee = beeRef.current;
     const shadow = shadowRef.current;
+
     if (!spotlight || !bee || !shadow) return;
 
-    let disposed = false;
-    let failed = false;
-    let refreshFrame = 0;
-    let readyCount = 0;
-    const animations = [];
-    const controller = new AbortController();
+    const animations = [bee, shadow].map((container) =>
+      lottie.loadAnimation({
+        container,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: "/bee.json",
+      }),
+    );
+
     const flight = { scrollProgress: 0 };
 
-    // Recalculate viewport dimensions so resizing also updates the flight path.
-    function positionBee(progress) {
-      const beeSize = 125;
-      const shadowSize = 115;
-      const center = (window.innerWidth - beeSize) / 2;
-      const offset = sampleKeyframes(horizontalKeyframes, progress);
-      const drop = sampleKeyframes(verticalKeyframes, progress);
-      const startY = -beeSize - 60;
-      const endY = window.innerHeight + 50;
-      const x = center + offset * window.innerWidth * 0.4;
-      const y = startY + (endY - startY) * drop;
-      const lookAhead = Math.min(1, progress + 0.02);
+    const positionBee = (progress) => {
+      const beeSize = bee.offsetWidth; // 벌 사이즈
+      const shadowSize = shadow.offsetWidth; // 벌 그림자 사이즈
+      const center = (window.innerWidth - beeSize) / 2; // 벌을 수평 가운데에 위치
+      const offset = sampleKeyframes(horizontalKeyframes, progress); // progress에 따른 벌의 수평 위치 비율
+      const drop = sampleKeyframes(verticalKeyframes, progress); // // progress에 따른 벌의 수직 위치 비율
+      const startY = -beeSize - 60; // 벌 애니메이션의 시작 위치 (임의로 -60만큼 추가)
+      const endY = window.innerHeight + 50; // 벌 애니메이션의 종료 위치 (임의로 50만큼 추가)
+      const x = center + offset * window.innerWidth * 0.4; // 벌의 실제 x 좌표(0.4를 곱해서 이동 거리 제한)
+      const y = startY + (endY - startY) * drop; // 벌의 실제 y 좌표
+      const lookAhead = Math.min(1, progress + 0.02); // 앞선 진행률
       const direction =
-        sampleKeyframes(horizontalKeyframes, lookAhead) - offset;
-      const tilt = gsap.utils.clamp(-14, 14, direction * 120);
+        sampleKeyframes(horizontalKeyframes, lookAhead) - offset; // 벌의 방향 계산
+      const tilt = gsap.utils.clamp(-14, 14, direction * 120); // 벌의 기울기 계산
 
       gsap.set(bee, { x, y, rotation: tilt });
 
       const heightFeel = Math.sin(drop * Math.PI);
       const shadowCenter = (beeSize - shadowSize) / 2;
+
       gsap.set(shadow, {
         x: x + shadowCenter + 40 * (0.5 + heightFeel),
         y: y + shadowCenter + 60 * (0.6 + heightFeel),
@@ -91,10 +105,11 @@ export const useBeeAnimation = () => {
         opacity: 0.5 - heightFeel * 0.2,
         transformOrigin: "50% 100%",
       });
-    }
+    };
 
     const context = gsap.context(() => {
-      positionBee(0);
+      positionBee(0); // 마운트 시 초기 위치 계산
+
       gsap.to(flight, {
         scrollProgress: 1,
         ease: "none",
@@ -103,96 +118,30 @@ export const useBeeAnimation = () => {
           start: "top top",
           end: "bottom bottom",
           scrub: true,
-          // Synchronize with the current scroll, including restored positions.
+          // markers: true,
           onRefresh: (trigger) => {
             flight.scrollProgress = trigger.progress;
             positionBee(trigger.progress);
           },
         },
+
         onUpdate: () => positionBee(flight.scrollProgress),
       });
     });
 
-    function scheduleRefresh() {
-      if (disposed) return;
-      cancelAnimationFrame(refreshFrame);
-      refreshFrame = requestAnimationFrame(() => {
-        ScrollTrigger.refresh();
-      });
-    }
+    const refreshScroll = () => ScrollTrigger.refresh();
 
-    // ReactLenis handles its own dimensions; refresh the animation's range here.
-    // Images, fonts and viewport changes can all change the scrollable range.
-    const observer = new ResizeObserver(scheduleRefresh);
-    observer.observe(spotlight);
-    window.addEventListener("resize", scheduleRefresh);
-    document.fonts.ready.then(scheduleRefresh);
-    scheduleRefresh();
+    window.addEventListener("resize", refreshScroll);
 
-    function onReady() {
-      if (disposed || failed) return;
-      readyCount += 1;
-      if (readyCount !== 2) return;
-
-      ScrollTrigger.refresh();
-      positionBee(flight.scrollProgress);
-      animations.forEach((animation) => animation.goToAndPlay(0, true));
-      setAnimationStatus("ready");
-    }
-
-    function onFailure() {
-      if (disposed || failed) return;
-      failed = true;
-      animations.forEach((animation) => animation.pause());
-      setAnimationStatus("error");
-    }
-
-    // Fetch once; use separate copies because Lottie can mutate animation data.
-    async function loadAnimations() {
-      try {
-        const response = await fetch("/bee.json", {
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error("Failed to load bee animation");
-        const data = await response.json();
-        if (disposed) return;
-
-        for (const container of [bee, shadow]) {
-          const animation = lottie.loadAnimation({
-            container,
-            renderer: "svg",
-            loop: true,
-            autoplay: false,
-            animationData: structuredClone(data),
-          });
-          animations.push(animation);
-          animation.addEventListener("DOMLoaded", onReady);
-          animation.addEventListener("data_failed", onFailure);
-          animation.addEventListener("error", onFailure);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") onFailure();
-      }
-    }
-
-    loadAnimations();
+    refreshScroll();
 
     // StrictMode also runs this cleanup before initializing again in development.
     return () => {
-      disposed = true;
-      controller.abort();
-      observer.disconnect();
-      window.removeEventListener("resize", scheduleRefresh);
-      cancelAnimationFrame(refreshFrame);
+      window.removeEventListener("resize", refreshScroll);
       context.revert();
-      animations.forEach((animation) => {
-        animation.removeEventListener("DOMLoaded", onReady);
-        animation.removeEventListener("data_failed", onFailure);
-        animation.removeEventListener("error", onFailure);
-        animation.destroy();
-      });
+      animations.forEach((animation) => animation.destroy());
     };
   }, []);
 
-  return { spotlightRef, beeRef, shadowRef, animationStatus };
+  return { spotlightRef, beeRef, shadowRef };
 };

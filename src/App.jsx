@@ -8,8 +8,7 @@ import { useBeeAnimation } from "./useBeeAnimation";
 gsap.registerPlugin(ScrollTrigger);
 
 function App() {
-  const { spotlightRef, beeRef, shadowRef, animationStatus } =
-    useBeeAnimation();
+  const { spotlightRef, beeRef, shadowRef } = useBeeAnimation();
 
   useLenis(() => {
     ScrollTrigger.update();
@@ -84,15 +83,13 @@ function App() {
 
       <div
         className="lottie-container pointer-events-none fixed top-0 left-0 h-svh w-full"
-        style={{
-          visibility: animationStatus === "ready" ? "visible" : "hidden",
-        }}
         aria-hidden="true"
       >
         <div
           ref={shadowRef}
           className="bee-shadow absolute top-0 left-0 size-[115px] opacity-50 blur-[2px] brightness-0 will-change-[transform,opacity]"
         />
+
         <div
           ref={beeRef}
           className="bee absolute top-0 left-0 size-[125px] will-change-transform"
